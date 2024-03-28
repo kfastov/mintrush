@@ -1,13 +1,19 @@
 import React from "react";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 // import { useBlock } from "@starknet-react/core";
+import Header from "./components/Header";
+import Images from "./components/Images";
+import HomePage from './components/HomePage';
+import CreateCollectionPage from './components/CreateCollectionPage';
 
 function App() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen gap-12">
-      <p className="mb-2 text-5xl">
-        [Coming soon]
-      </p>
-    </main>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/create" element={<CreateCollectionPage />} />
+      </Routes>
+    </Router>
   );
 }
 
