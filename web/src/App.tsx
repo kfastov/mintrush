@@ -1,10 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-// import { useBlock } from "@starknet-react/core";
-import Header from "./components/Header";
-import Images from "./components/Images";
 import HomePage from './components/HomePage';
 import CreateCollectionPage from './components/CreateCollectionPage';
+import SuccessPage from './components/SuccessPage';
 
 function App() {
   return (
@@ -12,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/create" element={<CreateCollectionPage />} />
+        <Route path="/success" element={<SuccessPage />} />
       </Routes>
     </Router>
   );
