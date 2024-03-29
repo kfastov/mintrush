@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import WalletConnector from './WalletConnector';
+import React from "react";
+import { Link } from "react-router-dom";
+import WalletConnector from "./WalletConnector";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -21,7 +21,10 @@ const Layout = ({ children }: LayoutProps) => {
                 </Link>
               </li>
               <li>
-                <Link to="/create" className="text-gray-600 hover:text-gray-800">
+                <Link
+                  to="/create"
+                  className="text-gray-600 hover:text-gray-800"
+                >
                   Create
                 </Link>
               </li>

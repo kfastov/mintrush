@@ -1,18 +1,21 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Layout from './Layout';
+import React from "react";
+import { Link } from "react-router-dom";
+import Layout from "./Layout";
 
 const SuccessPage = () => {
   return (
     <Layout>
       <section className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8">Collection Created Successfully!</h1>
+        <h1 className="text-3xl font-bold mb-8">
+          Collection Created Successfully!
+        </h1>
         <p className="text-xl text-gray-600 mb-8">
           Your NFT collection has been successfully deployed to the blockchain.
         </p>
         <div className="mb-8">
           <p className="text-lg text-gray-700">
-            Transaction Hash: <span className="font-bold">0x1234567890abcdef</span>
+            Transaction Hash:{" "}
+            <span className="font-bold">0x1234567890abcdef</span>
           </p>
           <a
             href="#"

@@ -4,7 +4,10 @@ import { Button } from "./Button";
 export default function Dialog({
   children,
   title,
-}: { children: React.ReactNode; title: string }) {
+}: {
+  children: React.ReactNode;
+  title: string;
+}) {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
