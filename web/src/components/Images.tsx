@@ -61,17 +61,24 @@ const Images = ({ files, setFiles }: ImagesProps) => {
       </div>
       {previews.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Selected Images:</h3>
-          <div className="grid grid-cols-3 gap-4">
-            {previews.map((preview, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={preview}
-                  alt={`Preview ${index + 1}`}
-                  className="w-full h-auto rounded-lg"
-                />
-              </div>
-            ))}
+          <h3 className="text-lg font-semibold mb-4 flex items-center">
+            Selected Images
+            <span className="ml-2 bg-blue-500 text-white px-2 py-1 rounded-full text-sm">
+              {previews.length}
+            </span>
+          </h3>
+          <div className="max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-3 gap-4">
+              {previews.map((preview, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={preview}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-auto rounded-lg"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
