@@ -7,6 +7,7 @@ import MainnetStub from './MainnetStub';
 import Layout from './Layout';
 import * as Delegation from '@ucanto/core/delegation';
 import * as Client from '@web3-storage/w3up-client';
+import { defaultFileComparator } from '@web3-storage/upload-client/sharding';
 import { CarWriter } from '@ipld/car';
 import { CID, Link as CIDLink, Version } from 'multiformats/cid';
 import { sha256 } from 'multiformats/hashes/sha2';
@@ -50,13 +51,14 @@ const initClient = async () => {
 };
 
 const metadataConstructor = (description: string, imagesCid: string, files: File[]) => {
-  const metadatas = files.map((file) => ({
-    name: file.name,
+  return files.map((file, i) => new File([new Blob([JSON.stringify({
+    name: file.name.split(".").slice(0, -1).join(".") || file.name,
     description: description,
     image: `ipfs://${imagesCid}/${file.name}`,
-  }));
-  return metadatas;
-};
+  })], {
+    type: "application/json",
+  })], `${i}.json`));
+}
 
 function Uint8ArrayFromBase64(base64String: string): Uint8Array {
   // Decode the Base64 string to a binary string
@@ -71,24 +73,6 @@ function Uint8ArrayFromBase64(base64String: string): Uint8Array {
 
   return bytes;
 }
-
-// TODO pack to car and then use that CAR in the uploadFiles function
-const calculateCid = async (files: File[]) => {
-  let rootCID: CIDLink<unknown, number, number, Version> | undefined
-
-  await createDirectoryEncoderStream(files)
-    .pipeThrough(new TransformStream({
-      transform (block, controller) {
-        rootCID = block.cid
-        controller.enqueue(block)
-      }
-    }))
-    .pipeThrough(new CAREncoderStream())
-    .pipeTo(new WritableStream())
-
-  // todo don't return undefined
-  return rootCID?.toString()
-};
 
 const CreateCollectionPage = () => {
   const [collectionName, setCollectionName] = useState("");
@@ -111,9 +95,6 @@ const CreateCollectionPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setStatus('Calculating CIDs...');
-    const imagesCid = await calculateCid(files);
-    console.log('imagesCid', imagesCid);
 
     setStatus("Uploading files...");
     if (!client) {
@@ -124,23 +105,24 @@ const CreateCollectionPage = () => {
     }
 
     try {
-      const directoryCid = await client.uploadDirectory(files);
-      // // create metadata JSONs
-      // const metadatas = metadataConstructor(
-      //   "description",
-      //   directoryCid.toString(),
-      //   files,
-      // );
-      // upload metadata JSONs to separate directory
-      // const metadataCid = await client.uploadDirectory(metadatas);
+      // Upload files to Web3.Storage
+      const directoryCid = await client.uploadDirectory(files, {customOrder: true});
       console.log('Uploaded directory CID:', directoryCid.toString());
+      // create metadata JSONs
+      const metadatas = metadataConstructor(
+        collectionName, // TODO separate description field
+        directoryCid.toString(),
+        files,
+      );
+      // upload metadata JSONs to separate directory
+      const metadataCid = await client.uploadDirectory(metadatas);
+      console.log('Uploaded metadata CID:', metadataCid.toString());
     } catch (e) {
       console.error('Error uploading files:', e);
       setStatus("Error uploading files. Please try again.");
       setIsLoading(false);
       return;
     }
-
 
     try {
       // Upload files
