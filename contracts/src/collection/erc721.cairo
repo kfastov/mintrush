@@ -5,8 +5,8 @@ pub trait ERC721CollectionTrait<TContractState> {
 
 #[starknet::contract]
 mod ERC721Collection {
-    use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait;
-use openzeppelin::token::erc721::ERC721Component;
+    use openzeppelin::token::erc721::erc721::ERC721Component::InternalTrait;
+    use openzeppelin::token::erc721::ERC721Component;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::upgrades::interface::IUpgradeable;
@@ -54,9 +54,16 @@ use openzeppelin::token::erc721::ERC721Component;
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, owner: ContractAddress) {
+    fn constructor(
+        ref self: ContractState,
+        owner: ContractAddress, // owner of collection, can't upgrade contract
+        name: ByteArray, // name of collection
+        symbol: ByteArray, // symbol of collection
+        base_uri: ByteArray, // base uri for token metadata
+    ) {
         // TODO check deployer address with Authorizer contract
         self.ownable.initializer(owner);
+        self.erc721.initializer(name, symbol, base_uri);
     }
 
     #[abi(embed_v0)]
@@ -69,16 +76,5 @@ use openzeppelin::token::erc721::ERC721Component;
             self.ownable.assert_only_owner();
             self.upgradeable._upgrade(new_class_hash);
         }
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::ERC721Collection;
-
-    #[test]
-    fn it_works() {
-        assert(6 * 7 == 42, 'it works!');
     }
 }
