@@ -1,5 +1,3 @@
-mod collection {
-    mod erc721;
+pub mod collection {
+    pub mod erc721;
 }
-#[cfg(test)]
-mod tests;
