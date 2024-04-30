@@ -11,8 +11,7 @@ mod ERC721Collection {
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::upgrades::interface::IUpgradeable;
     use openzeppelin::upgrades::UpgradeableComponent;
-    use starknet::ClassHash;
-    use starknet::ContractAddress;
+    use starknet::{get_caller_address, ClassHash, ContractAddress};
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
@@ -22,6 +21,7 @@ mod ERC721Collection {
     // ERC721 Mixin
     #[abi(embed_v0)]
     impl ERC721Impl = ERC721Component::ERC721MixinImpl<ContractState>;
+    impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
     // Ownable Mixin
     #[abi(embed_v0)]
     impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
@@ -39,6 +39,7 @@ mod ERC721Collection {
         ownable: OwnableComponent::Storage,
         #[substorage(v0)]
         upgradeable: UpgradeableComponent::Storage,
+        next_token_id: u256,
     }
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -66,9 +67,12 @@ mod ERC721Collection {
         self.erc721.initializer(name, symbol, base_uri);
     }
 
-    #[abi(embed_v0)]
-    impl ERC721CollectionImpl<ContractState> of super::ERC721CollectionTrait<ContractState> {
-        fn mint(ref self: ContractState) {}
+    #[external(v0)]
+    fn mint(ref self: ContractState) {
+        // mint the next available token id to the caller
+        let token_id = self.next_token_id.read();
+        self.erc721._mint(get_caller_address(), token_id);
+        self.next_token_id.write(token_id + 1);
     }
 
     impl UpgradeableImpl of IUpgradeable<ContractState> {

@@ -2,20 +2,30 @@ use core::traits::Into;
 use starknet::ContractAddress;
 
 use snforge_std::{declare, ContractClassTrait};
+use snforge_std::{start_prank, CheatTarget};
 
 use contracts::collection::erc721::ERC721CollectionTraitSafeDispatcher;
 use contracts::collection::erc721::ERC721CollectionTraitSafeDispatcherTrait;
 use contracts::collection::erc721::ERC721CollectionTraitDispatcher;
 use contracts::collection::erc721::ERC721CollectionTraitDispatcherTrait;
 
-use openzeppelin::token::erc721::interface::IERC721MetadataSafeDispatcher;
-use openzeppelin::token::erc721::interface::IERC721MetadataSafeDispatcherTrait;
-use openzeppelin::token::erc721::interface::IERC721MetadataDispatcher;
-use openzeppelin::token::erc721::interface::IERC721MetadataDispatcherTrait;
+use openzeppelin::token::erc721::interface::ERC721ABISafeDispatcher;
+use openzeppelin::token::erc721::interface::ERC721ABISafeDispatcherTrait;
+use openzeppelin::token::erc721::interface::ERC721ABIDispatcher;
+use openzeppelin::token::erc721::interface::ERC721ABIDispatcherTrait;
+
+use openzeppelin::access::ownable::interface::IOwnableSafeDispatcher;
+use openzeppelin::access::ownable::interface::IOwnableSafeDispatcherTrait;
+use openzeppelin::access::ownable::interface::IOwnableDispatcher;
+use openzeppelin::access::ownable::interface::IOwnableDispatcherTrait;
+
 
 // Constants (will be moved in the separate file)
 fn OWNER() -> ContractAddress {
     0x1.try_into().unwrap()
+}
+fn MINTER() -> ContractAddress {
+    0x2.try_into().unwrap()
 }
 fn COLLECTION_NAME() -> ByteArray {
     "MyCollection"
@@ -44,28 +54,43 @@ fn deploy_contract(name: ByteArray) -> ContractAddress {
 fn test_constants() {
     let contract_address = deploy_contract("ERC721Collection");
 
-    let erc721_dispatcher = IERC721MetadataDispatcher { contract_address };
+    let erc721_dispatcher = ERC721ABIDispatcher { contract_address };
+    let ownable_dispatcher = IOwnableDispatcher { contract_address };
 
     let name = erc721_dispatcher.name();
     assert(name == COLLECTION_NAME(), 'Invalid name');
 
     let symbol = erc721_dispatcher.symbol();
     assert(symbol == COLLECTION_SYMBOL(), 'Invalid symbol');
+
+    let owner = ownable_dispatcher.owner();
+    assert(owner == OWNER(), 'Invalid owner');
 }
 
 #[test]
-#[ignore]
 fn test_mint() {
+    let contract_address = deploy_contract("ERC721Collection");
+
     let collection_dispatcher = ERC721CollectionTraitDispatcher { contract_address };
+    let erc721_dispatcher = ERC721ABIDispatcher { contract_address };
+
+    // change current sender to Minter
+    start_prank(CheatTarget::One(contract_address), MINTER());
+
+    // mint 1 token
     collection_dispatcher.mint();
-    // TODO more tests
-// let balance_before = dispatcher.get_balance();
-// assert(balance_before == 0, 'Invalid balance');
-
-// dispatcher.increase_balance(42);
-
-// let balance_after = dispatcher.get_balance();
-// assert(balance_after == 42, 'Invalid balance');
+    
+    // check minter's balance
+    let balance = erc721_dispatcher.balance_of(MINTER());
+    assert(balance == 1, 'Invalid balance');
+    // check token's owner
+    let owner = erc721_dispatcher.owner_of(0);
+    assert(owner == MINTER(), 'Invalid owner');
+    // check token's uri
+    let uri = erc721_dispatcher.token_uri(0);
+    let expected_uri = format!("{}{}", COLLECTION_URL(), 0);
+    println!("uri: {}", uri);
+    assert(uri == expected_uri, 'Invalid uri');
 }
 // #[test]
 // #[feature("safe_dispatcher")]
