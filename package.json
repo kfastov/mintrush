@@ -1,0 +1,15 @@
+{
+  "name": "mintrush",
+  "module": "index.ts",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "bun --filter=@mintrush/web dev",
+    "build": "bun --filter=@mintrush/web build",
+    "preview": "bun --filter=@mintrush/web preview"
+  }
+}
