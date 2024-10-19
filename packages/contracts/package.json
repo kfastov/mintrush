@@ -4,5 +4,15 @@
   "keywords": [],
   "author": "Konstantin Fastov",
   "license": "MIT",
-  "description": "Mintrush contracts"
+  "description": "Mintrush contracts",
+  "scripts": {
+    "chain": "starknet-devnet --seed 0 --account-class cairo1",
+    "deploy": "bun run scripts/deploy.ts",
+    "fund": "bun run scripts/fundAccount.ts"
+  },
+  "dependencies": {
+    "ethers": "^6.13.4",
+    "starknet": "^6.15.0",
+    "yargs": "^17.7.2"
+  }
 }

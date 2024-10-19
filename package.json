@@ -10,6 +10,9 @@
   "scripts": {
     "dev": "bun --filter=@mintrush/web dev",
     "build": "bun --filter=@mintrush/web build",
-    "preview": "bun --filter=@mintrush/web preview"
+    "preview": "bun --filter=@mintrush/web preview",
+    "chain": "bun --filter=@mintrush/contracts chain",
+    "deploy": "bun --filter=@mintrush/contracts run deploy",
+    "fund": "bun --filter=@mintrush/contracts run fund"
   }
 }
