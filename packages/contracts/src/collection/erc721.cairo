@@ -6,7 +6,7 @@ pub trait ERC721CollectionTrait<TContractState> {
 #[starknet::contract]
 mod ERC721Collection {
     use openzeppelin::token::erc721::erc721::ERC721Component::InternalTrait;
-    use openzeppelin::token::erc721::ERC721Component;
+    use openzeppelin::token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::upgrades::interface::IUpgradeable;
@@ -71,14 +71,14 @@ mod ERC721Collection {
     fn mint(ref self: ContractState) {
         // mint the next available token id to the caller
         let token_id = self.next_token_id.read();
-        self.erc721._mint(get_caller_address(), token_id);
+        self.erc721.mint(get_caller_address(), token_id);
         self.next_token_id.write(token_id + 1);
     }
 
     impl UpgradeableImpl of IUpgradeable<ContractState> {
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
             self.ownable.assert_only_owner();
-            self.upgradeable._upgrade(new_class_hash);
+            self.upgradeable.upgrade(new_class_hash);
         }
     }
 }

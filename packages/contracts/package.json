@@ -6,6 +6,7 @@
   "license": "MIT",
   "description": "Mintrush contracts",
   "scripts": {
+    "build": "scarb build",
     "chain": "starknet-devnet --seed 0 --account-class cairo1",
     "deploy": "bun run scripts/deploy.ts",
     "fund": "bun run scripts/fundAccount.ts"
