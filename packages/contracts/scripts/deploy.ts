@@ -1,4 +1,4 @@
-import { RpcProvider, Account, CallData, stark } from 'starknet'
+import { RpcProvider, Account, CallData, stark, type CompiledSierra, type CompiledSierraCasm } from 'starknet'
 import { getCompiledCode } from './utils'
 
 const rpcUrl = process.env.RPC_URL
@@ -13,12 +13,20 @@ const deployer = new Account(provider, deployerAddress, deployerPrivateKey);
 
 console.log('Account connected successfully');
 
-let sierraCode, casmCode;
+interface CompiledCode {
+    sierraCode: CompiledSierra;
+    casmCode: CompiledSierraCasm;
+}
+
+let collectionCode, factoryCode: CompiledCode;
 
 try {
-    ({ sierraCode, casmCode } = await getCompiledCode(
+    collectionCode = await getCompiledCode(
         "contracts_ERC721Collection"
-    ));
+    );
+    factoryCode = await getCompiledCode(
+        "contracts_CollectionFactory"
+    );
 } catch (error: any) {
     console.log("Failed to read contract files");
     process.exit(1)
@@ -26,20 +34,23 @@ try {
 
 console.log('Contract read successfully')
 
-const myCallData = new CallData(sierraCode.abi);
-const constructor = myCallData.compile("constructor", {
-  owner: deployer.address,
-  name: "Test tokens", 
-  symbol: "TEST",
-  base_uri: "ipfs:/test/tokens/",
+
+// declare the collection contract because it will be deployed only by factory contract
+const declareResponse = await deployer.declareIfNot({
+  contract: collectionCode.sierraCode,
+  casm: collectionCode.casmCode,
 });
+
+console.log(`✅ Collection contract has been declared with the class hash: ${declareResponse.class_hash}`);
+
 const deployResponse = await deployer.declareAndDeploy({
-  contract: sierraCode,
-  casm: casmCode,
-  constructorCalldata: constructor,
+  contract: factoryCode.sierraCode,
+  casm: factoryCode.casmCode,
+  constructorCalldata: [],
   salt: stark.randomAddress(),
+  unique: false
 });
 
 console.log(
-  `✅ Contract has been deployed with the address: ${deployResponse.deploy.address}`
+  `✅ Factory contract has been deployed with the address: ${deployResponse.deploy.address}`
 );
