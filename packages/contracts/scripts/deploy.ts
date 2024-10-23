@@ -1,4 +1,5 @@
-import { RpcProvider, Account, CallData, stark, type CompiledSierra, type CompiledSierraCasm } from 'starknet'
+import fs from 'fs'
+import { RpcProvider, Account, stark, shortString, type CompiledSierra, type CompiledSierraCasm } from 'starknet'
 import { getCompiledCode } from './utils'
 
 const rpcUrl = process.env.RPC_URL
@@ -54,3 +55,28 @@ const deployResponse = await deployer.declareAndDeploy({
 console.log(
   `✅ Factory contract has been deployed with the address: ${deployResponse.deploy.address}`
 );
+
+// write the factory address and class hash to deployments file
+const chainName = await getChainName();
+
+// make deployments dir if not exists
+fs.mkdirSync(`deployments`, { recursive: true });
+
+const deploymentsPath = `deployments/${chainName}.json`
+
+fs.writeFileSync(deploymentsPath, JSON.stringify({
+  factoryAddress: deployResponse.deploy.address,
+  collectionClassHash: declareResponse.class_hash
+}, null, 2));
+
+async function getChainName() {
+  const chainId = await provider.getChainId();
+  const pretendedName = shortString.decodeShortString(chainId);
+  if (pretendedName === 'SN_SEPOLIA') {
+    if (rpcUrl?.includes('127.0.0.1') || rpcUrl?.includes('localhost')) {
+      return 'devnet'
+    }
+    return 'sepolia'
+  }
+  return pretendedName.replace('SN_', '').toLowerCase()
+}
